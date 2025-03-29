@@ -1,0 +1,30 @@
+if hookmetamethod then
+    local speaker = game.Players.LocalPlayer
+    if not speaker then return end  
+    if not speaker.Character then speaker.CharacterAdded:Wait() end 
+
+    local char = speaker.Character
+    local setspeed
+
+    local index
+    index = hookmetamethod(game, "__index", function(self, key)
+        local keyclean = key:gsub("\0", "")
+        if (keyclean == "WalkSpeed" or keyclean == "walkSpeed") and self:IsA("Humanoid") and self:IsDescendantOf(char) and not checkcaller() then
+            print("[__index] Accessed WalkSpeed:", setspeed or self.WalkSpeed) -- Debug output
+            return setspeed or self.WalkSpeed
+        end
+        return index(self, key)
+    end)
+
+    local newindex
+    newindex = hookmetamethod(game, "__newindex", function(self, key, value)
+        local keyclean = key:gsub("\0", "")
+        if (keyclean == "WalkSpeed" or keyclean == "walkSpeed") and self:IsA("Humanoid") and self:IsDescendantOf(char) and not checkcaller() then
+            setspeed = tonumber(value)
+            print("[__newindex] WalkSpeed changed to:", setspeed) -- Debug output
+            self.WalkSpeed = setspeed
+            return
+        end
+        return newindex(self, key, value)
+    end)
+end
